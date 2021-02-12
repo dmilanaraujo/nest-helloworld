@@ -1,0 +1,45 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Cat {
+  id: ID!
+  name: String!
+  age: Float
+  breed: String
+}
+
+"""Cats List Output"""
+type CatsPaginatedResponse {
+  items: [Cat!]
+  total: Int!
+  count: Float!
+}
+
+type Query {
+  findAllCat: [Cat!]!
+  cat(id: Int!): Cat!
+  cats(name: String, age: Float, breed: String): [Cat!]!
+  cats_paginate(pageSize: Int = 10, pageNumber: Int = 0, keywords: String): CatsPaginatedResponse!
+}
+
+type Mutation {
+  addCat(newCatData: NewCatInput!): Cat!
+
+  """Update a cat and return the object."""
+  updateCat(input: UpdateCatInput!, id: Int!): Cat
+  removeCat(id: Int!): Boolean!
+}
+
+input NewCatInput {
+  id: Float!
+  name: String!
+  age: Float
+  breed: String
+}
+
+input UpdateCatInput {
+  name: String!
+  age: Float
+  breed: String
+}

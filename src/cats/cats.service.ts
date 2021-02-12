@@ -1,35 +1,78 @@
 import { Injectable } from '@nestjs/common';
-import {Cat} from "./interfaces/cat.interface";
+import {InjectRepository} from '@nestjs/typeorm';
+import {Repository} from "typeorm";
+import {Cat} from "./cat.entity";
+import {NewCatInput} from "./dto/new-cat.input";
+import {UpdateCatInput} from "./dto/update-cat.input";
+import {CatsPaginationArgs} from "./dto/cats-pagination.args";
+import {CatsPaginatedResponse} from "./dto/cats-paginated-response";
 
 @Injectable()
 export class CatsService {
-    private readonly cats: Cat[] = [];
+    constructor(
+        @InjectRepository(Cat)
+        private catsRepository: Repository<Cat>,
+    ) {}
 
-    create(cat: Cat) {
-        this.cats.push(cat);
+    create(catInput: NewCatInput): Promise<Cat> {
+        try {
+            return this.catsRepository.save(catInput);
+        } catch (e) {
+            throw new Error(`Error in Repository to add cats: ${e}`);
+        }
     }
 
-    update(name: string, cat: Cat) {
-        this.cats.forEach((value, index) => {
-            if (value.name == name) {
-                cat.name = name;
-                this.cats[index] = cat;
-            }
-        });
+    async update(id: number, catInput: UpdateCatInput): Promise<Cat> {
+        try{
+            const obj = await this.catsRepository.findOne({where: {id}});
+            return this.catsRepository.save({
+                ...obj, // existing fields
+                ...catInput, // updated fields
+            });
+        } catch (e) {
+            throw new Error(`Error in Service to update cats: ${e}`);
+        }
     }
 
-    findAll(): Cat[] {
-        return this.cats;
+    findAll(): Promise<Cat[]> {
+        try{
+            return this.catsRepository.find();
+        } catch (e) {
+            throw new Error(`Error in Service to get cats: ${e}`);
+        }
     }
 
-    findByName(name: string): Cat {
-        return this.cats.find(cat => cat.name == name);
+    async getAllPaginate(catsArgs: CatsPaginationArgs): Promise<CatsPaginatedResponse> {
+        try {
+            const filter: any = {take: catsArgs.pageSize, skip: catsArgs.pageNumber - 1, order: {id: 'ASC'}};
+            const result = await this.catsRepository.findAndCount(filter);
+            const items = result[0];
+            const total = result[1];
+            const response: CatsPaginatedResponse = {
+                items,
+                count: items.length,
+                total,
+            };
+            return response;
+        } catch (e) {
+            throw new Error(`Error in Repository to find all cats, with paginate: ${e}`);
+        }
+    };
+
+
+    findById(id: number): Promise<Cat> {
+        try{
+            return this.catsRepository.findOne(id);
+        } catch (e) {
+            throw new Error(`Error in Service to find cat: ${e}`);
+        }
     }
 
-    delete(name: string) {
-        const index = this.cats.findIndex(cat => cat.name == name);
-        if (index != -1) {
-            this.cats.splice(index, 1);
+    delete(id: number) {
+        try{
+            this.catsRepository.delete(id);
+        } catch (e) {
+            throw new Error(`Error in Service to delete cat: ${e}`);
         }
     }
 }
