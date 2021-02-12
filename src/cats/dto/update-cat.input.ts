@@ -3,7 +3,7 @@ import {Min} from "class-validator";
 
 @InputType()
 export class UpdateCatInput {
-    @Field()
+    @Field({ nullable: true })
     name: string;
 
     @Field({ nullable: true })

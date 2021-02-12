@@ -16,7 +16,7 @@ export class CatsResolver extends BaseResolver(Cat){
         super();
     }
 
-    @Query(returns => Cat, {name: 'cat' })
+    @Query(returns => Cat, {name: 'cat', nullable: true })
     async getCat(@Args('id', { type: () => Int }) id: number): Promise<Cat> {
         return this.catsService.findById(id);
     }
@@ -52,7 +52,7 @@ export class CatsResolver extends BaseResolver(Cat){
         }
     }
 
-    @Mutation(returns => Boolean)
+    @Query(returns => Boolean)
     async removeCat(@Args('id', { type: () => Int }) id: number) {
         return this.catsService.delete(id);
     }
@@ -60,7 +60,7 @@ export class CatsResolver extends BaseResolver(Cat){
 
     // @ResolveField('posts', returns => [Post])
     // async posts(@Parent() cat: Cat) {
-    //     const { id } = author;
+    //     const { id } = cat;
     //     return this.postsService.findAll({ authorId: id });
     // }
 }

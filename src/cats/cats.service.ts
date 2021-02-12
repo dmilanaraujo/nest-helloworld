@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Repository} from "typeorm";
 import {Cat} from "./cat.entity";
@@ -34,7 +34,7 @@ export class CatsService {
         }
     }
 
-    findAll(): Promise<Cat[]> {
+    async findAll(): Promise<Cat[]> {
         try{
             return this.catsRepository.find();
         } catch (e) {
@@ -48,19 +48,18 @@ export class CatsService {
             const result = await this.catsRepository.findAndCount(filter);
             const items = result[0];
             const total = result[1];
-            const response: CatsPaginatedResponse = {
+            return {
                 items,
                 count: items.length,
                 total,
             };
-            return response;
         } catch (e) {
             throw new Error(`Error in Repository to find all cats, with paginate: ${e}`);
         }
     };
 
 
-    findById(id: number): Promise<Cat> {
+    async findById(id: number): Promise<Cat> {
         try{
             return this.catsRepository.findOne(id);
         } catch (e) {
@@ -68,9 +67,11 @@ export class CatsService {
         }
     }
 
-    delete(id: number) {
+    async delete(id: number): Promise<boolean> {
         try{
-            this.catsRepository.delete(id);
+            // return this.catsRepository.delete(id);
+            const obj = await this.catsRepository.delete(id);
+            return obj.affected === 1;
         } catch (e) {
             throw new Error(`Error in Service to delete cat: ${e}`);
         }

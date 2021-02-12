@@ -3,8 +3,6 @@ import {Min} from "class-validator";
 
 @InputType()
 export class NewCatInput {
-    @Field()
-    id: number;
 
     @Field()
     name: string;

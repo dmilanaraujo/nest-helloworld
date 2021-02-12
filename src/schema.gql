@@ -18,9 +18,10 @@ type CatsPaginatedResponse {
 
 type Query {
   findAllCat: [Cat!]!
-  cat(id: Int!): Cat!
+  cat(id: Int!): Cat
   cats(name: String, age: Float, breed: String): [Cat!]!
   cats_paginate(pageSize: Int = 10, pageNumber: Int = 0, keywords: String): CatsPaginatedResponse!
+  removeCat(id: Int!): Boolean!
 }
 
 type Mutation {
@@ -28,18 +29,16 @@ type Mutation {
 
   """Update a cat and return the object."""
   updateCat(input: UpdateCatInput!, id: Int!): Cat
-  removeCat(id: Int!): Boolean!
 }
 
 input NewCatInput {
-  id: Float!
   name: String!
   age: Float
   breed: String
 }
 
 input UpdateCatInput {
-  name: String!
+  name: String
   age: Float
   breed: String
 }

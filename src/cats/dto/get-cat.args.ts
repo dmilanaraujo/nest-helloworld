@@ -12,5 +12,5 @@ export class GetCatArgs {
 
     @Field({ nullable: true })
     @MinLength(3)
-    breed: string;
+    breed?: string;
 }
