@@ -1,4 +1,4 @@
-import {Args, Int, Query, Mutation, Resolver } from '@nestjs/graphql';
+import {Args, Int, Query, Mutation, Resolver, ResolveField, Parent } from '@nestjs/graphql';
 import {CatsService} from "./cats.service";
 import {GetCatArgs} from "./dto/get-cat.args";
 import {Cat} from "./cat.entity";
@@ -52,12 +52,20 @@ export class CatsResolver extends BaseResolver(Cat){
         }
     }
 
-    @Query(returns => Boolean)
+    @Mutation(returns => Boolean)
     async removeCat(@Args('id', { type: () => Int }) id: number) {
         return this.catsService.delete(id);
     }
 
 
+    // @ResolveField()
+    // name(@Parent() cat: Cat,  @Args("filter", { nullable: true }) filter: String) {
+    //     const { name } = cat;
+    //     if (name.includes(filter.trim())) {
+    //         return name;
+    //     }
+    //     return null;
+    // }
     // @ResolveField('posts', returns => [Post])
     // async posts(@Parent() cat: Cat) {
     //     const { id } = cat;

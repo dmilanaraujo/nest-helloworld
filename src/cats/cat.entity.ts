@@ -8,15 +8,15 @@ export class Cat {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Field()
+    @Field({ nullable: true })
     @Column()
-    name: string;
+    name?: string;
 
     @Field({ nullable: true })
     @Column()
-    age: number;
+    age?: number;
 
     @Field({ nullable: true })
     @Column()
-    breed: string;
+    breed?: string;
 }
