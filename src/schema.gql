@@ -2,9 +2,22 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Cat {
+type Role {
   id: ID!
   name: String!
+}
+
+type User {
+  id: ID!
+  username: String!
+  password: String!
+  email: String!
+  roles: [Role!]
+}
+
+type Cat {
+  id: ID!
+  name: String
   age: Float
   breed: String
 }
@@ -21,7 +34,11 @@ type Query {
   cat(id: Int!): Cat
   cats(name: String, age: Float, breed: String): [Cat!]!
   cats_paginate(pageSize: Int = 10, pageNumber: Int = 0, keywords: String): CatsPaginatedResponse!
-  removeCat(id: Int!): Boolean!
+  users: [User!]!
+  user(id: Int!): User!
+  me: User!
+  roles: [Role!]!
+  role(id: Int!): Role!
 }
 
 type Mutation {
@@ -29,6 +46,15 @@ type Mutation {
 
   """Update a cat and return the object."""
   updateCat(input: UpdateCatInput!, id: Int!): Cat
+  removeCat(id: Int!): Boolean!
+  createUser(createUserInput: CreateUserInput!): User!
+  updateUser(updateUserInput: UpdateUserInput!): User!
+  removeUser(id: Int!): Boolean!
+  assignUserRol(roleId: Int!, userId: Int!): User!
+  unassignUserRol(roleId: Int!, userId: Int!): User!
+  createRole(createRoleInput: CreateRoleInput!): Role!
+  updateRole(updateRoleInput: UpdateRoleInput!): Role!
+  removeRole(id: Int!): Boolean!
 }
 
 input NewCatInput {
@@ -41,4 +67,26 @@ input UpdateCatInput {
   name: String
   age: Float
   breed: String
+}
+
+input CreateUserInput {
+  username: String!
+  password: String!
+  email: String!
+}
+
+input UpdateUserInput {
+  username: String
+  password: String
+  email: String
+  id: Int!
+}
+
+input CreateRoleInput {
+  name: String!
+}
+
+input UpdateRoleInput {
+  name: String
+  id: Int!
 }

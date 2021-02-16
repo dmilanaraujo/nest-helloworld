@@ -1,5 +1,5 @@
 import { ObjectType } from '@nestjs/graphql';
-import {Cat} from "../cat.entity";
+import {Cat} from "../entities/cat.entity";
 import {Paginated} from "../../shared/dto/base-paginated-response";
 
 @ObjectType({description: 'Cats List Output'})

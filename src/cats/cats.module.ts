@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CatsService } from './cats.service';
 import { CatsResolver } from './cats.resolver';
-import {Cat} from "./cat.entity";
+import {Cat} from "./entities/cat.entity";
 import {TypeOrmModule} from '@nestjs/typeorm';
 
 @Module({

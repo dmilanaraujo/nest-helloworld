@@ -1,7 +1,7 @@
 import {Args, Int, Query, Mutation, Resolver, ResolveField, Parent } from '@nestjs/graphql';
 import {CatsService} from "./cats.service";
 import {GetCatArgs} from "./dto/get-cat.args";
-import {Cat} from "./cat.entity";
+import {Cat} from "./entities/cat.entity";
 import {NewCatInput} from "./dto/new-cat.input";
 import {UpdateCatInput} from "./dto/update-cat.input";
 import {CatsPaginatedResponse} from "./dto/cats-paginated-response";
