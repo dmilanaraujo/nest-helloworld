@@ -3,24 +3,28 @@ import {
   Query,
   Mutation,
   Args,
-  Int,
   ResolveField,
   Parent,
 } from '@nestjs/graphql';
 import { UsersService } from './users.service';
-import { User } from './entities/user.entity';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import { GqlAuthGuard } from '../auth/gql-auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../auth/gql-current-user.decorator';
-import { Role } from '../roles/entities/role.entity';
+import { User } from './schemas/user.schema';
+import { FilterUserInput } from './dto/filter-user.input';
+import { Role } from '../roles/schemas/role.schema';
+import { RolesService } from '../roles/roles.service';
+import { PaginationUsersInput } from './dto/pagination-users.input';
+import {PaginatedUsersResponse} from "./dto/paginated-users-response";
 
-@UseGuards(GqlAuthGuard)
+// @UseGuards(GqlAuthGuard)
 @Resolver(() => User)
 export class UsersResolver {
   constructor(
     private readonly usersService: UsersService,
+    private readonly rolesService: RolesService,
   ) {}
 
   @Mutation(() => User)
@@ -29,12 +33,20 @@ export class UsersResolver {
   }
 
   @Query(() => [User], { name: 'users' })
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Args('filters', { nullable: true }) filters?: FilterUserInput) {
+    return this.usersService.findAll(filters);
+  }
+
+  @Query(() => PaginatedUsersResponse, { name: 'users_paginate' })
+  findAllPaginate(
+    @Args('filters', { nullable: true }) filters?: FilterUserInput,
+    @Args('pagination', { nullable: true }) pagination?: PaginationUsersInput,
+  ) {
+    return this.usersService.findAllPaginate(filters, pagination);
   }
 
   @Query(() => User, { name: 'user' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
+  findOne(@Args('id') id: string) {
     return this.usersService.findOne(id);
   }
 
@@ -49,18 +61,28 @@ export class UsersResolver {
   }
 
   @Mutation(() => Boolean)
-  removeUser(@Args('id', { type: () => Int }) id: number) {
+  removeUser(@Args('id') id: string) {
     return this.usersService.remove(id);
   }
 
   @Mutation(() => User)
-  assignUserRol(@Args('userId', { type: () => Int }) userId: number, @Args('roleId', { type: () => Int }) roleId: number) {
+  assignUserRol(
+    @Args('userId') userId: string,
+    @Args('roleId') roleId: string,
+  ) {
     return this.usersService.assignUserRol(userId, roleId);
   }
 
   @Mutation(() => User)
-  unassignUserRol(@Args('userId', { type: () => Int }) userId: number, @Args('roleId', { type: () => Int }) roleId: number) {
+  unassignUserRol(
+    @Args('userId') userId: string,
+    @Args('roleId') roleId: string,
+  ) {
     return this.usersService.unassignUserRol(userId, roleId);
   }
 
+  @ResolveField('roles', (returns) => [Role])
+  async roles(@Parent() user: User) {
+    return this.rolesService.findAll({ _id: { $in: user.roles } });
+  }
 }

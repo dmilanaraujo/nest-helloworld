@@ -3,70 +3,55 @@
 # ------------------------------------------------------
 
 type Role {
-  id: ID!
+  id: String!
   name: String!
 }
 
 type User {
-  id: ID!
+  id: String!
   username: String!
   password: String!
   email: String!
   roles: [Role!]
 }
 
-type Cat {
-  id: ID!
-  name: String
-  age: Float
-  breed: String
-}
-
-"""Cats List Output"""
-type CatsPaginatedResponse {
-  items: [Cat!]
+"""Users List Output"""
+type PaginatedUsersResponse {
+  items: [User!]
   total: Int!
   count: Float!
 }
 
 type Query {
-  findAllCat: [Cat!]!
-  cat(id: Int!): Cat
-  cats(name: String, age: Float, breed: String): [Cat!]!
-  cats_paginate(pageSize: Int = 10, pageNumber: Int = 0, keywords: String): CatsPaginatedResponse!
-  users: [User!]!
-  user(id: Int!): User!
+  users(filters: FilterUserInput): [User!]!
+  users_paginate(pagination: PaginationUsersInput, filters: FilterUserInput): PaginatedUsersResponse!
+  user(id: String!): User!
   me: User!
   roles: [Role!]!
-  role(id: Int!): Role!
+  role(id: String!): Role!
+}
+
+input FilterUserInput {
+  username: String
+  email: String
+}
+
+input PaginationUsersInput {
+  limit: Int = 20
+  skip: Int = 0
+  keywords: String
+  sort: String = "-id"
 }
 
 type Mutation {
-  addCat(newCatData: NewCatInput!): Cat!
-
-  """Update a cat and return the object."""
-  updateCat(input: UpdateCatInput!, id: Int!): Cat
-  removeCat(id: Int!): Boolean!
   createUser(createUserInput: CreateUserInput!): User!
   updateUser(updateUserInput: UpdateUserInput!): User!
-  removeUser(id: Int!): Boolean!
-  assignUserRol(roleId: Int!, userId: Int!): User!
-  unassignUserRol(roleId: Int!, userId: Int!): User!
+  removeUser(id: String!): Boolean!
+  assignUserRol(roleId: String!, userId: String!): User!
+  unassignUserRol(roleId: String!, userId: String!): User!
   createRole(createRoleInput: CreateRoleInput!): Role!
   updateRole(updateRoleInput: UpdateRoleInput!): Role!
-  removeRole(id: Int!): Boolean!
-}
-
-input NewCatInput {
-  name: String!
-  age: Float
-  breed: String
-}
-
-input UpdateCatInput {
-  name: String
-  age: Float
-  breed: String
+  removeRole(id: String!): Boolean!
 }
 
 input CreateUserInput {
@@ -79,7 +64,7 @@ input UpdateUserInput {
   username: String
   password: String
   email: String
-  id: Int!
+  id: String!
 }
 
 input CreateRoleInput {
@@ -88,5 +73,5 @@ input CreateRoleInput {
 
 input UpdateRoleInput {
   name: String
-  id: Int!
+  id: String!
 }

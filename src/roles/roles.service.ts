@@ -1,57 +1,51 @@
 import { Injectable } from '@nestjs/common';
 import { CreateRoleInput } from './dto/create-role.input';
 import { UpdateRoleInput } from './dto/update-role.input';
-import {Repository} from "typeorm";
-import {InjectRepository} from '@nestjs/typeorm';
-import {Role} from "./entities/role.entity";
+import {Role, RoleDocument} from "./schemas/role.schema";
+import {Model} from "mongoose";
+import {InjectModel} from '@nestjs/mongoose';
 
 @Injectable()
 export class RolesService {
-    constructor(
-        @InjectRepository(Role)
-        private rolesRepository: Repository<Role>,
-    ) {}
+    constructor(@InjectModel(Role.name) private roleModel: Model<RoleDocument>) {}
 
     create(createRoleInput: CreateRoleInput) {
       try {
-          return this.rolesRepository.save(createRoleInput);
+          const createdRole = new this.roleModel(createRoleInput);
+          return createdRole.save();
       } catch (e) {
           throw new Error(`Error in Repository to add role: ${e}`);
       }
   }
 
-  findAll(where: any) {
-      try{
-          return this.rolesRepository.find({ where });
+  async findAll(where: any) {
+      try {
+          return this.roleModel.find(where).exec();
       } catch (e) {
           throw new Error(`Error in Service to get roles: ${e}`);
       }
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
       try{
-          return this.rolesRepository.findOne(id);
+          return this.roleModel.findById(id).exec();
       } catch (e) {
           throw new Error(`Error in Service to find role: ${e}`);
       }
   }
 
-  async update(id: number, updateRoleInput: UpdateRoleInput) {
+  async update(_id: string, updateRoleInput: UpdateRoleInput) {
       try {
-          const obj = await this.rolesRepository.findOne({where: {id}});
-          return this.rolesRepository.save({
-              ...obj, // existing fields
-              ...updateRoleInput, // updated fields
-          });
+          return this.roleModel.findByIdAndUpdate(_id, {...updateRoleInput}).exec();
       } catch (e) {
           throw new Error(`Error in Service to update roles: ${e}`);
       }
   }
 
-  async remove(id: number) {
+  async remove(_id: string) {
       try {
-          const obj = await this.rolesRepository.delete(id);
-          return obj.affected === 1;
+          const result = await this.roleModel.deleteOne({_id}).exec();
+          return result.deletedCount == 1;
       } catch (e) {
           throw new Error(`Error in Service to delete role: ${e}`);
       }

@@ -1,83 +1,101 @@
 import {Injectable} from '@nestjs/common';
-import {InjectRepository} from '@nestjs/typeorm';
 import {CreateUserInput} from './dto/create-user.input';
 import {UpdateUserInput} from './dto/update-user.input';
-import {Repository} from "typeorm";
-import {User} from "./entities/user.entity";
-import {Role} from "../roles/entities/role.entity";
+import {Model} from "mongoose";
+import {Role, RoleDocument} from "../roles/schemas/role.schema";
+import {User, UserDocument} from "./schemas/user.schema";
+import {InjectModel} from '@nestjs/mongoose';
+import {FilterUserInput} from "./dto/filter-user.input";
+import {PaginationUsersInput} from "./dto/pagination-users.input";
+import {PaginatedUsersResponse} from "./dto/paginated-users-response";
 
 @Injectable()
 export class UsersService {
     constructor(
-        @InjectRepository(User)
-        private usersRepository: Repository<User>,
-        @InjectRepository(Role)
-        private rolesRepository: Repository<Role>,
+        @InjectModel(User.name) private userModel: Model<UserDocument>,
+        @InjectModel(Role.name) private roleModel: Model<RoleDocument>
     ) {}
 
   create(createUserInput: CreateUserInput) {
       try {
-          return this.usersRepository.save(createUserInput);
+          const createdUser = new this.userModel(createUserInput);
+          return createdUser.save();
       } catch (e) {
           throw new Error(`Error in Repository to add user: ${e}`);
       }
   }
 
-  findAll() {
-      try{
-          return this.usersRepository.find();
+  async findAll(where?: FilterUserInput) {
+      try {
+          return this.userModel.find(where).exec();
       } catch (e) {
-          throw new Error(`Error in Service to get cats: ${e}`);
+          throw new Error(`Error in Service to get users: ${e}`);
       }
   }
 
-  findOne(id: number) {
-      try{
-          return this.usersRepository.findOne(id);
+  async findAllPaginate(where?: FilterUserInput, pagination?: PaginationUsersInput): Promise<PaginatedUsersResponse> {
+      try {
+          const total = await this.userModel.find(where).countDocuments();
+          const items = await this.userModel
+              .find(where)
+              .limit(pagination.limit || -1)
+              .skip(pagination.skip || 0)
+              .sort(pagination.sort)
+              .exec();
+          return {
+              items,
+              count: items.length,
+              total,
+          };
       } catch (e) {
-          throw new Error(`Error in Service to find cat: ${e}`);
+          throw new Error(`Error in Service to get users: ${e}`);
       }
+  }
 
+  findOne(id: string) {
+      try{
+          return this.userModel.findById(id).exec();
+      } catch (e) {
+          throw new Error(`Error in Service to find user: ${e}`);
+      }
   }
 
   findOneByUsername(username: string) {
       try{
-          return this.usersRepository.findOne({ where: { username }});
+          return this.userModel.findOne({username}).exec();
       } catch (e) {
-          throw new Error(`Error in Service to find cat: ${e}`);
-      }
-
-  }
-
-  async update(id: number, updateUserInput: UpdateUserInput) {
-      try {
-          const obj = await this.usersRepository.findOne({where: {id}});
-          return this.usersRepository.save({
-              ...obj, // existing fields
-              ...updateUserInput, // updated fields
-          });
-      } catch (e) {
-          throw new Error(`Error in Service to update cats: ${e}`);
+          throw new Error(`Error in Service to find user: ${e}`);
       }
   }
 
-  async remove(id: number) {
+  async update(id: string, updateUserInput: UpdateUserInput) {
       try {
-          const obj = await this.usersRepository.delete(id);
-          return obj.affected === 1;
+          return  this.userModel.findByIdAndUpdate(id, {...updateUserInput}).exec();
       } catch (e) {
-          throw new Error(`Error in Service to delete cat: ${e}`);
+          throw new Error(`Error in Service to update users: ${e}`);
       }
   }
 
-  async assignUserRol(userId: number, roleId: number) {
+  async remove(_id: string) {
       try {
-          const user = await this.usersRepository.findOne({where: {id: userId}, relations: ['roles']});
+          const result = await this.userModel.deleteOne({_id}).exec();
+          return result.deletedCount == 1;
+      } catch (e) {
+          throw new Error(`Error in Service to delete user: ${e}`);
+      }
+  }
+
+  async assignUserRol(userId: string, roleId: string) {
+      try {
+          const user = await this.userModel.findById(userId).exec();
           if (user) {
-            const role = await this.rolesRepository.findOne({where: {id: roleId}});
+              const role = await this.roleModel.findById(roleId).exec();
               if(role) {
-                  user.roles.push(role);
-                  return this.usersRepository.save(user);
+                  if (!user.roles.includes(role.id))  {
+                      user.roles.push(role);
+                      return user.save();
+                  }
+                  throw new Error(`User contains this Role`);
               }
           }
           throw new Error(`Not found user or role`);
@@ -86,14 +104,14 @@ export class UsersService {
       }
   }
 
-  async unassignUserRol(userId: number, roleId: number) {
+  async unassignUserRol(userId: string, roleId: string) {
       try {
-          const user = await this.usersRepository.findOne({where: {id: userId}, relations: ['roles']});
+          const user = await this.userModel.findById(userId).exec();
           if (user) {
-              const role = await this.rolesRepository.findOne({where: {id: roleId}});
+              const role = await this.roleModel.findById(roleId).exec();
               if(role) {
-                  user.roles = user.roles.filter(value => value.id != role.id);
-                  return this.usersRepository.save(user);
+                  user.roles = user.roles.filter(value => value != role.id);
+                  return user.save();
               }
           }
           throw new Error(`Not found user or role`);

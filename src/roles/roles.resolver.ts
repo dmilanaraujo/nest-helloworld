@@ -1,13 +1,13 @@
 import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { RolesService } from './roles.service';
-import { Role } from './entities/role.entity';
 import { CreateRoleInput } from './dto/create-role.input';
 import { UpdateRoleInput } from './dto/update-role.input';
 import {UseGuards} from "@nestjs/common";
 import {GqlAuthGuard} from "../auth/gql-auth.guard";
 import {SkipAuth} from "../auth/constants";
+import {Role} from "./schemas/role.schema";
 
-@UseGuards(GqlAuthGuard)
+// @UseGuards(GqlAuthGuard)
 @Resolver(() => Role)
 export class RolesResolver {
   constructor(private readonly rolesService: RolesService) {}
@@ -24,7 +24,7 @@ export class RolesResolver {
   }
 
   @Query(() => Role, { name: 'role' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
+  findOne(@Args('id') id: string) {
     return this.rolesService.findOne(id);
   }
 
@@ -34,7 +34,7 @@ export class RolesResolver {
   }
 
   @Mutation(() => Boolean)
-  removeRole(@Args('id', { type: () => Int }) id: number) {
+  removeRole(@Args('id') id: string) {
     return this.rolesService.remove(id);
   }
 }
