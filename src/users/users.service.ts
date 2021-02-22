@@ -8,6 +8,9 @@ import {InjectModel} from '@nestjs/mongoose';
 import {FilterUserInput} from "./dto/filter-user.input";
 import {PaginationUsersInput} from "./dto/pagination-users.input";
 import {PaginatedUsersResponse} from "./dto/paginated-users-response";
+import * as PDFDocument from 'pdfkit'
+import * as Excel from 'exceljs';
+import {Buffer as BufferExcel} from "exceljs";
 
 @Injectable()
 export class UsersService {
@@ -117,6 +120,107 @@ export class UsersService {
           throw new Error(`Not found user or role`);
       } catch (e) {
           throw new Error(`Error in Service to assignUserRol : ${e}`);
+      }
+  }
+
+  async exportAll(where?: FilterUserInput, format?: string) {
+        if (format == 'pdf') {
+            return this.exportPDF(where);
+        } else {
+            return this.exportExcel(where, format);
+        }
+  }
+  async exportPDF(where?: FilterUserInput) {
+      try {
+          const items = await this.findAll(where);
+
+          const pdfBuffer: Buffer = await new Promise(resolve => {
+              const doc = new PDFDocument({
+                  size: 'LETTER',
+                  bufferPages: true,
+              });
+
+              // customize your PDF document
+              items.forEach((item) => {
+                  doc.text(`${item.username} ${item.email}`);
+                  doc.moveDown();
+              });
+              doc.end();
+
+              const buffer = [];
+              doc.on('data', buffer.push.bind(buffer));
+              doc.on('end', () => {
+                  const data = Buffer.concat(buffer);
+                  resolve(data)
+              })
+          });
+
+          return pdfBuffer.toString('base64');
+      } catch (e) {
+          throw new Error(`Error in Service to export users : ${e}`);
+      }
+  }
+
+  async exportExcel(where?: FilterUserInput, format: string = 'excel') {
+      try {
+        const items = await this.findAll(where);
+        const workbook = new Excel.Workbook();
+        const worksheet = workbook.addWorksheet('Users list');
+          worksheet.columns = [
+              {
+                  header: 'Username',
+                  key: 'username',
+                  width: 10,
+                  outlineLevel: 1,
+                  hidden: false,
+                  style: null,
+                  values:null,
+                  letter: 'a',
+                  number: 1,
+                  worksheet: null,
+                  defn: null,
+                  isCustomWidth: false,
+                  isDefault: false,
+                  headerCount: 1,
+                  headers: [],
+                  equivalentTo: null,
+                  collapsed:false,
+                  eachCell: null
+              },
+              {
+                  header: 'Email',
+                  key: 'email',
+                  width: 20,
+                  outlineLevel: 1,
+                  hidden: false,
+                  style: null,
+                  values:null,
+                  letter: 'b',
+                  number: 1,
+                  worksheet: null,
+                  defn: null,
+                  isCustomWidth: false,
+                  isDefault: false,
+                  headerCount: 1,
+                  headers: [],
+                  equivalentTo: null,
+                  collapsed:false,
+                  eachCell: null
+              }
+          ];
+          items.forEach((data, index) => {
+              worksheet.addRow(data);
+          });
+          let buffer: BufferExcel = null;
+          if (format == 'excel') {
+            buffer = await workbook.xlsx.writeBuffer();
+          } else {
+            buffer = await workbook.csv.writeBuffer();
+          }
+          // Buffer.concat(buffer).toString('base64');
+          return buffer.toString();
+      } catch (e) {
+          throw new Error(`Error in Service to export users : ${e}`);
       }
   }
 }

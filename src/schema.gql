@@ -24,6 +24,7 @@ type PaginatedUsersResponse {
 
 type Query {
   users(filters: FilterUserInput): [User!]!
+  users_export(format: String = "pdf", filters: FilterUserInput): String!
   users_paginate(pagination: PaginationUsersInput, filters: FilterUserInput): PaginatedUsersResponse!
   user(id: String!): User!
   me: User!

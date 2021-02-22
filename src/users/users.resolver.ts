@@ -37,6 +37,11 @@ export class UsersResolver {
     return this.usersService.findAll(filters);
   }
 
+  @Query(() => String, { name: 'users_export' })
+  export(@Args('filters', { nullable: true }) filters?: FilterUserInput, @Args('format', { defaultValue: 'pdf'}) format?: string) {
+    return this.usersService.exportAll(filters, format);
+  }
+
   @Query(() => PaginatedUsersResponse, { name: 'users_paginate' })
   findAllPaginate(
     @Args('filters', { nullable: true }) filters?: FilterUserInput,
