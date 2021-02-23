@@ -19,7 +19,7 @@ import { RolesService } from '../roles/roles.service';
 import { PaginationUsersInput } from './dto/pagination-users.input';
 import {PaginatedUsersResponse} from "./dto/paginated-users-response";
 
-// @UseGuards(GqlAuthGuard)
+@UseGuards(GqlAuthGuard)
 @Resolver(() => User)
 export class UsersResolver {
   constructor(

@@ -7,7 +7,7 @@ import {GqlAuthGuard} from "../auth/gql-auth.guard";
 import {SkipAuth} from "../auth/constants";
 import {Role} from "./schemas/role.schema";
 
-// @UseGuards(GqlAuthGuard)
+@UseGuards(GqlAuthGuard)
 @Resolver(() => Role)
 export class RolesResolver {
   constructor(private readonly rolesService: RolesService) {}
