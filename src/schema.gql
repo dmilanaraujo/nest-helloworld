@@ -2,9 +2,16 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Action {
+  id: String!
+  name: String!
+  description: String!
+}
+
 type Role {
   id: String!
   name: String!
+  actions: [Action!]
 }
 
 type User {
@@ -22,6 +29,38 @@ type PaginatedUsersResponse {
   count: Float!
 }
 
+type Park {
+  id: String!
+  name: String!
+}
+
+type Trace {
+  id: String!
+  email: String!
+  ip: String!
+  functionality: String!
+  status: String!
+  date: String!
+}
+
+"""Users List Output"""
+type PaginatedTracesResponse {
+  items: [Trace!]
+  total: Int!
+  count: Float!
+}
+
+type Graphic {
+  id: String!
+  name: String!
+}
+
+type Dashboard {
+  id: String!
+  name: String!
+  roles: [Graphic!]
+}
+
 type Query {
   users(filters: FilterUserInput): [User!]!
   users_export(format: String = "pdf", filters: FilterUserInput): String!
@@ -30,6 +69,13 @@ type Query {
   me: User!
   roles: [Role!]!
   role(id: String!): Role!
+  parks: [Park!]!
+  park(id: Int!): Park!
+  traces: [Trace!]!
+  trace(id: String!): Trace!
+  traces_export(format: String = "pdf", filters: FilterTraceInput): String!
+  traces_paginate(pagination: PaginationTracesInput, filters: FilterTraceInput): PaginatedTracesResponse!
+  dashboard(id: Int!): Dashboard!
 }
 
 input FilterUserInput {
@@ -38,6 +84,18 @@ input FilterUserInput {
 }
 
 input PaginationUsersInput {
+  limit: Int = 20
+  skip: Int = 0
+  keywords: String
+  sort: String = "-id"
+}
+
+input FilterTraceInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+}
+
+input PaginationTracesInput {
   limit: Int = 20
   skip: Int = 0
   keywords: String
@@ -53,6 +111,16 @@ type Mutation {
   createRole(createRoleInput: CreateRoleInput!): Role!
   updateRole(updateRoleInput: UpdateRoleInput!): Role!
   removeRole(id: String!): Boolean!
+  assignRolActions(updateRoleInput: UpdateRoleInput!): Role!
+  createPark(createParkInput: CreateParkInput!): Park!
+  updatePark(updateParkInput: UpdateParkInput!): Park!
+  removePark(id: Int!): Park!
+  createTrace(createTraceInput: CreateTraceInput!): Trace!
+  updateTrace(updateTraceInput: UpdateTraceInput!): Trace!
+  removeTrace(id: String!): Trace!
+  createDashboard(createDashboardInput: CreateDashboardInput!): Dashboard!
+  updateDashboard(updateDashboardInput: UpdateDashboardInput!): Dashboard!
+  removeDashboard(id: Int!): Dashboard!
 }
 
 input CreateUserInput {
@@ -75,4 +143,38 @@ input CreateRoleInput {
 input UpdateRoleInput {
   name: String
   id: String!
+  actionsName: [String!]!
+}
+
+input CreateParkInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateParkInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateTraceInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateTraceInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: String!
+}
+
+input CreateDashboardInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateDashboardInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
 }

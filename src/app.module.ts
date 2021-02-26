@@ -7,6 +7,10 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { RolesModule } from './roles/roles.module';
 import {MongooseModule} from '@nestjs/mongoose';
+import { ParksModule } from './parks/parks.module';
+import { TracesModule } from './traces/traces.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { CaslModule } from './casl/casl.module';
 
 @Module({
   imports: [
@@ -17,6 +21,10 @@ import {MongooseModule} from '@nestjs/mongoose';
       UsersModule,
       RolesModule,
       AuthModule,
+      ParksModule,
+      TracesModule,
+      DashboardModule,
+      CaslModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,16 +1,30 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  Parent,
+  ResolveField,
+} from '@nestjs/graphql';
 import { RolesService } from './roles.service';
 import { CreateRoleInput } from './dto/create-role.input';
 import { UpdateRoleInput } from './dto/update-role.input';
-import {UseGuards} from "@nestjs/common";
-import {GqlAuthGuard} from "../auth/gql-auth.guard";
-import {SkipAuth} from "../auth/constants";
-import {Role} from "./schemas/role.schema";
+import { UseGuards } from '@nestjs/common';
+import { GqlAuthGuard } from '../auth/gql-auth.guard';
+import { SkipAuth } from '../auth/constants';
+import { Role } from './schemas/role.schema';
+import { Action } from './schemas/actions.schema';
+import { ActionsService } from './actions.service';
+import {CheckActionGuard} from "../auth/check-action.guard";
 
-@UseGuards(GqlAuthGuard)
 @Resolver(() => Role)
+@UseGuards(CheckActionGuard)
+@UseGuards(GqlAuthGuard)
 export class RolesResolver {
-  constructor(private readonly rolesService: RolesService) {}
+  constructor(
+    private readonly rolesService: RolesService,
+    private readonly actionsService: ActionsService,
+  ) {}
 
   @Mutation(() => Role)
   createRole(@Args('createRoleInput') createRoleInput: CreateRoleInput) {
@@ -36,5 +50,17 @@ export class RolesResolver {
   @Mutation(() => Boolean)
   removeRole(@Args('id') id: string) {
     return this.rolesService.remove(id);
+  }
+
+  @Mutation(() => Role)
+  assignRolActions(@Args('updateRoleInput') updateRoleInput: UpdateRoleInput) {
+    return this.rolesService.assignRolActions(updateRoleInput.id, updateRoleInput.actionsName);
+  }
+
+  @ResolveField('actions', (returns) => [Action])
+  async actions(@Parent() role: Role) {
+    return this.actionsService.findAll({
+      _id: { $in: role.actions },
+    });
   }
 }

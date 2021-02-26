@@ -18,9 +18,12 @@ import { Role } from '../roles/schemas/role.schema';
 import { RolesService } from '../roles/roles.service';
 import { PaginationUsersInput } from './dto/pagination-users.input';
 import {PaginatedUsersResponse} from "./dto/paginated-users-response";
+import {ActionDef} from "../auth/constants";
+import {CheckActionGuard} from "../auth/check-action.guard";
 
-@UseGuards(GqlAuthGuard)
 @Resolver(() => User)
+@UseGuards(CheckActionGuard)
+@UseGuards(GqlAuthGuard)
 export class UsersResolver {
   constructor(
     private readonly usersService: UsersService,
@@ -28,20 +31,24 @@ export class UsersResolver {
   ) {}
 
   @Mutation(() => User)
+  @ActionDef('Create_User')
   createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
     return this.usersService.create(createUserInput);
   }
 
+  @ActionDef('FindAll_Users')
   @Query(() => [User], { name: 'users' })
   findAll(@Args('filters', { nullable: true }) filters?: FilterUserInput) {
     return this.usersService.findAll(filters);
   }
 
+  @ActionDef('Export_Users')
   @Query(() => String, { name: 'users_export' })
   export(@Args('filters', { nullable: true }) filters?: FilterUserInput, @Args('format', { defaultValue: 'pdf'}) format?: string) {
     return this.usersService.exportAll(filters, format);
   }
 
+  @ActionDef('FindAll_Users')
   @Query(() => PaginatedUsersResponse, { name: 'users_paginate' })
   findAllPaginate(
     @Args('filters', { nullable: true }) filters?: FilterUserInput,
@@ -50,6 +57,7 @@ export class UsersResolver {
     return this.usersService.findAllPaginate(filters, pagination);
   }
 
+  @ActionDef('FindOne_User')
   @Query(() => User, { name: 'user' })
   findOne(@Args('id') id: string) {
     return this.usersService.findOne(id);
@@ -60,6 +68,7 @@ export class UsersResolver {
     return this.usersService.findOneByUsername(user.username);
   }
 
+  @ActionDef('Update_User')
   @Mutation(() => User)
   updateUser(@Args('updateUserInput') updateUserInput: UpdateUserInput) {
     return this.usersService.update(updateUserInput.id, updateUserInput);
@@ -70,6 +79,7 @@ export class UsersResolver {
     return this.usersService.remove(id);
   }
 
+  @ActionDef('AssignRol_User')
   @Mutation(() => User)
   assignUserRol(
     @Args('userId') userId: string,
@@ -78,6 +88,7 @@ export class UsersResolver {
     return this.usersService.assignUserRol(userId, roleId);
   }
 
+  @ActionDef('UnassignRol_User')
   @Mutation(() => User)
   unassignUserRol(
     @Args('userId') userId: string,
